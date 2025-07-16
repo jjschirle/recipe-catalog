@@ -4,13 +4,14 @@
 # - Decides which parser to call
 
 # src/scraper/get_recipe.py
-
 import sys
 import os
 from extruct_parser import parse_with_extruct
 from recipe_scrapers_parser import parse_with_recipe_scrapers
 import globals
-from utils import is_valid_url, slugify
+from utils.text import slugify
+from utils.net import is_valid_url,extract_domain_tag
+
 
 def main():
     if len(sys.argv) < 2:
@@ -49,6 +50,12 @@ def main():
         print("❌ Title and ingredients are required. Exiting.")
         sys.exit(1)
 
+    # Extract domain tag and add it
+    domain_tag = extract_domain_tag(url)
+    tags = data.get("tags", [])
+    if domain_tag not in tags:
+        tags.append(domain_tag)
+
     # Build markdown frontmatter and content
     frontmatter = f"""---
 title: "{data['title']}"
@@ -68,9 +75,14 @@ video: "{data.get('video', '')}"
 """
     ingredients_md = ''.join([f"- {ing}\n" for ing in data.get('ingredients_detail', [])])
     instructions_md = "\n## Instructions\n\n" + data.get('instructions', '')
-    comments_md = "\n## Comments and Notes\n\nWrite your notes here..."
 
-    content = frontmatter + ingredients_md + instructions_md + comments_md
+    nutrition_md = ""
+    if data.get('nutrition'):
+        nutrition_md = "\n\n## Nutrition\n\n" + data['nutrition']
+
+    comments_md = "\n\n## Comments and Notes\n\nWrite your notes here..."
+
+    content = frontmatter + ingredients_md + instructions_md + nutrition_md + comments_md
 
     filename = slugify(data['title']) + ".md"
     filepath = os.path.join(globals.RECIPE_FOLDER, filename)

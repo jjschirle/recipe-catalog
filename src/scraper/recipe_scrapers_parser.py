@@ -4,7 +4,8 @@
 
 # src/scraper/recipe_scrapers_parser.py
 from recipe_scrapers import scrape_me
-from utils import parse_and_clean_ingredients
+from utils.ingredient import parse_and_clean_ingredients
+from utils.text import clean_title
 
 def parse_with_recipe_scrapers(url, debug=False):
     """
@@ -12,11 +13,11 @@ def parse_with_recipe_scrapers(url, debug=False):
     Returns a dictionary or None if failed.
     """
     try:
-        # scrape_html( html: str | None, org_url: str, *, online: bool = False, supported_only: bool | None = None, wild_mode: bool | None = None, )
-        # scraper = scrape_me(url, wild_mode=True) does not have wild_mode
         scraper = scrape_me(url)
 
         title = scraper.title() or "Untitled Recipe"
+        title = clean_title(title)
+
         ingredients_detail = scraper.ingredients() or []
         instructions = scraper.instructions() or ""
         cuisine = []
@@ -25,15 +26,18 @@ def parse_with_recipe_scrapers(url, debug=False):
         prep_time = "N/A"
         video = ""
 
-        # ingredients_list = [ing.split(",")[0].strip().split(" ")[-1] for ing in ingredients_detail if ing]
         ingredients_list = parse_and_clean_ingredients(ingredients_detail, debug=debug)
         dietary = []
+
+        # recipe-scrapers usually does not provide nutrition
+        nutrition_text = ""
 
         parsed = {
             "title": title,
             "ingredients_detail": ingredients_detail,
             "ingredients_list": ingredients_list,
             "instructions": instructions,
+            "nutrition": nutrition_text,
             "cuisine": cuisine,
             "tags": tags,
             "dietary": dietary,

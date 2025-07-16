@@ -1,50 +1,11 @@
-# src/scraper/utils.py
+# Ingredient-specific parsing & cleaning
 import re
-import requests
-from ingredient_parser import parse_ingredient  # For semantic ingredient parsing
-import inflect  # For singularization
+from ingredient_parser import parse_ingredient
+import inflect
+from .text import clean_ingredient_text
 
 p = inflect.engine()
 
-def is_valid_url(url, debug=False):
-    """
-    Check if a URL is syntactically valid and reachable.
-
-    - Uses a regex to validate structure.
-    - Adds a User-Agent header to mimic a browser and avoid bot blocks.
-    - Prints debug info if enabled.
-
-    Returns True if reachable (status code < 400), False otherwise.
-    """
-    regex = re.compile(r'^(?:http|ftp)s?://\S+$', re.IGNORECASE)
-
-    if not re.match(regex, url):
-        if debug:
-            print("⚠️ Regex check failed for URL.")
-        return False
-
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
-
-    try:
-        if debug:
-            print(f"🔎 Trying GET request to: {url}")
-        response = requests.get(url, headers=headers, timeout=10)
-        if debug:
-            print(f"🔎 Response status code: {response.status_code}")
-        return response.status_code < 400
-    except requests.RequestException as e:
-        if debug:
-            print(f"⚠️ GET request exception: {e}")
-        return False
-
-def slugify(text):
-    """
-    Convert text to a URL-friendly slug:
-    - Lowercase
-    - Strip leading/trailing spaces
-    - Replace spaces with hyphens
-    """
-    return text.lower().strip().replace(" ", "-")
 
 def split_compound_ingredients(ingredient):
     """
@@ -62,16 +23,6 @@ def split_compound_ingredients(ingredient):
         if all(len(p.split()) <= 3 for p in parts):
             return parts
     return [ingredient]
-
-def clean_ingredient_text(text):
-    """
-    Remove unwanted non-alphabetic characters from an ingredient string
-    (except hyphens and %), lowercase it, and normalize spaces.
-    """
-    if not isinstance(text, str):
-        return ""
-    cleaned = re.sub(r"[^a-zA-Z\-%\s]", "", text)
-    return re.sub(r"\s+", " ", cleaned).strip().lower()
 
 def is_section_header(text):
     """
@@ -95,7 +46,7 @@ def strip_prep_descriptors(text):
         "crushed", "peeled", "frozen", "roasted", "toasted", "ground",
         "small", "large", "medium", "ripe", "slightly", "raw", "natural",
         "creamy", "freshly", "optional", "plus", "cubed", "thinly", "fancy",
-        "extra", "virgin", "pure", 'store', 'bought'
+        "extra", "virgin", "pure", 'store', 'bought', 'fresh', 'torn'
     ]
 
     words = text.split()
@@ -106,6 +57,7 @@ def strip_prep_descriptors(text):
     while words and words[-1] in descriptors:
         words.pop()
     return " ".join(words)
+
 
 def singularize(text):
     """

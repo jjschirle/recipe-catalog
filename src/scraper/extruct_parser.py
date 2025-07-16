@@ -2,8 +2,8 @@
 import requests
 import extruct
 from w3lib.html import get_base_url
-from utils import parse_and_clean_ingredients
-
+from utils.ingredient import parse_and_clean_ingredients
+from utils.text import clean_title
 
 def parse_with_extruct(url, debug=False):
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -29,6 +29,8 @@ def parse_with_extruct(url, debug=False):
             return None
 
         title = recipe_data.get("name", "Untitled Recipe")
+        title = clean_title(title)
+
         ingredients_detail = recipe_data.get("recipeIngredient", [])
         instructions_raw = recipe_data.get("recipeInstructions", [])
 
@@ -58,19 +60,30 @@ def parse_with_extruct(url, debug=False):
 
         dietary = [tag for tag in tags if tag.lower() in ["vegan", "vegetarian", "gluten-free", "dairy-free"]]
         ingredients_list = parse_and_clean_ingredients(ingredients_detail, debug=debug)
-        # ingredients_list = [ing.split(",")[0].strip().split(" ")[-1] for ing in ingredients_detail if ing]
+
+        # Nutrition parsing
+        nutrition_data = recipe_data.get("nutrition", {})
+        nutrition_text = ""
+        if nutrition_data:
+            nutrition_parts = []
+            for key, value in nutrition_data.items():
+                if key.startswith("@"):
+                    continue
+                nutrition_parts.append(f"{key.capitalize()}: {value}")
+            nutrition_text = "\n".join(nutrition_parts)
 
         parsed = {
             "title": title,
             "ingredients_detail": ingredients_detail,
             "ingredients_list": ingredients_list,
             "instructions": instructions,
+            "nutrition": nutrition_text,
             "cuisine": cuisine,
             "tags": tags,
             "dietary": dietary,
             "prep_time": prep_time,
             "servings": servings,
-            "video": video_link
+            "video": video_link,
         }
 
         return parsed
