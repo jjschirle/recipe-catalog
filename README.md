@@ -1,3 +1,53 @@
+# recipe-catalog
+
+I wanted some way for me to keep track of recipes I like, or download recipes into a functional catalog. Far too often I scroll throughout instagram, or lose a recipe I wanted to try because I don't have an organized method for storing recipes. Enter my recipe-catalog. A React app that contains code to parse websites to create markdown files easily edited through Obsidian. A python parser takes recipe webpages and converts them to markdown files for user-friendly editing and ease of upload. The ```.md``` files are pushed to github, which serves as a cloud backup. The React frontend will parse the recipe files and build the interface for the catalog. A template recipe markdown makes it possible to add custom recipes easily.
+
+## Summary of my Workflow
+local script ➜ create Markdown ➜ edit in Obsidian ➜ git add/commit/push ➜ 
+GitHub as cloud storage ➜ GitHub Pages auto-build ➜ public website updated for my reference
+
+## General structure
+# File structure
+```
+.
+├── 
+```
+
+for frontend  
+```
+src/
+├─ components/
+│   ├─ RecipeCard.jsx
+│   ├─ RecipeDetail.jsx
+│   ├─ RecipeFilters.jsx
+│   ├─ RecipeList.jsx
+│   ├─ ShoppingList.jsx
+│   ├─ Header.jsx
+│   └─ Footer.jsx
+├─ pages/
+│   ├─ Home.jsx
+│   ├─ RecipePage.jsx
+│   └─ ShoppingListPage.jsx
+├─ utils/
+│   ├─ markdownParser.js
+│   └─ ingredientUtils.js
+├─ App.jsx
+├─ main.jsx
+└─ index.css (Tailwind)
+```
+
+## Using the Python recipe scraper - command line usage
+When I use this, I navigate to my root ```recipe-catalog``` folder (i.e. open my VSCode). I then [activate](#Installing dependencies for python) the virtual environment, and call:   
+```python3 src/scraper/get_recipe.py "https://some-recipe.com"```
+
+## Installing dependencies for python
+On macOS/Linux:  
+``` source .venv/bin/activate ```  
+On Windows (PowerShell):  
+``` .venv\Scripts\Activate ```  
+Install packages:  
+``` pip install -r requirements.txt ```  
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
@@ -68,3 +118,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+
