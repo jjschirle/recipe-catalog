@@ -3,9 +3,11 @@
 # - Handles CLI args
 # - Decides which parser to call
 
+
 # src/scraper/get_recipe.py
 import sys
 import os
+import datetime
 from extruct_parser import parse_with_extruct
 from recipe_scrapers_parser import parse_with_recipe_scrapers
 import globals
@@ -50,15 +52,16 @@ def main():
         print("❌ Title and ingredients are required. Exiting.")
         sys.exit(1)
 
-    # Extract domain tag and add it
+    # Add date
+    today_str = datetime.date.today().isoformat()
+
+    # Extract domain tag
     domain_tag = extract_domain_tag(url)
-    tags = data.get("tags", [])
-    if domain_tag not in tags:
-        tags.append(domain_tag)
 
     # Build markdown frontmatter and content
     frontmatter = f"""---
 title: "{data['title']}"
+date: "{today_str}"
 tags: {data.get('tags', [])}
 cuisine: {data.get('cuisine', [])}
 dietary: {data.get('dietary', [])}
@@ -68,6 +71,7 @@ prep_time: "{data.get('prep_time', 'N/A')}"
 servings: "{data.get('servings', 'N/A')}"
 source: "{url}"
 video: "{data.get('video', '')}"
+domain: "{domain_tag}"
 ---
 
 ## Ingredients
